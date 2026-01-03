@@ -1,0 +1,92 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\Product;
+use Illuminate\Http\Request;
+
+class ProductController extends Controller
+{
+
+    public function index()
+    {
+        $products = Product::orderBy('created_at', 'desc')->get();
+        return response()->json([
+            'success' => true,
+            'data' => $products
+        ]);
+    }
+
+
+    public function store(Request $request)
+    {
+
+        $request->validate([
+            'name' => 'required',
+            'sku' => 'required|unique:products',
+            'category' => 'required',
+            'price' => 'required|numeric',
+            'stock' => 'required|numeric',
+        ]);
+
+
+        $product = Product::create($request->all());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Produk berhasil ditambahkan',
+            'data' => $product
+        ], 201);
+    }
+
+
+    public function show($id)
+    {
+        $product = Product::find($id);
+        if (!$product) {
+            return response()->json(['message' => 'Produk tidak ditemukan'], 404);
+        }
+        return response()->json(['success' => true, 'data' => $product]);
+    }
+
+
+    public function update(Request $request, $id)
+    {
+        $product = Product::find($id);
+        if (!$product) {
+            return response()->json(['message' => 'Produk tidak ditemukan'], 404);
+        }
+
+
+        $request->validate([
+            'name' => 'required',
+            'price' => 'numeric',
+            'stock' => 'numeric',
+        ]);
+
+        $product->update($request->all());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Produk berhasil diupdate',
+            'data' => $product
+        ]);
+    }
+
+
+    public function destroy($id)
+    {
+        $product = Product::find($id);
+        if (!$product) {
+            return response()->json(['message' => 'Produk tidak ditemukan'], 404);
+        }
+
+        $product->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Produk berhasil dihapus'
+        ]);
+    }
+}
